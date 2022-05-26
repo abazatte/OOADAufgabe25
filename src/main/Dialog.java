@@ -5,6 +5,7 @@ import helper.language.Messages;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import business.Rechner;
 
@@ -12,7 +13,10 @@ public class Dialog {
 
     private Rechner rechner = new Rechner();
     private Map<Integer, Command> aktionen = new HashMap<>();
-       
+
+    private Stack<Undo> undos = new Stack<>();
+    private Stack<Redo> redos = new Stack<>();
+
     public Dialog() {
         this.aktionen.put(0, new ProgrammBeenden());
         this.aktionen.put(1, new Rechnerzuruecksetzen(this.rechner));
@@ -29,20 +33,41 @@ public class Dialog {
             eingabe = einSchritt();
         }
     }
-    
-    public void ausgabe(){ // gibt Auswahlmoeglichkeiten aus
+
+    public void ausgabe() { // gibt Auswahlmoeglichkeiten aus
         //System.out.println("(0) Programm beenden");
         for (int tmp : this.aktionen.keySet()) {
             System.out.println("(" + tmp + ") " + this.aktionen.get(tmp));
-        }       
+        }
+        if (undos.size() != 0) {
+            System.out.println(Messages.getString("Dialog.0"));
+        }
+        if (redos.size() != 0) {
+            System.out.println(Messages.getString("Dialog.1"));
+        }
     }
 
     public int einSchritt() {
         this.ausgabe();
         int eingabe = Eingabe.leseInt();
-        Command com = this.aktionen.get(eingabe);
-        if (com != null) {
-            com.execute();
+        switch (eingabe) {
+            case 98:
+                if (undos.size() != 0) {
+                    redos.add((Redo) undos.pop().execute());
+                }
+                break;
+            case 99:
+                if (redos.size() != 0) {
+                    undos.add(new Undo(this.rechner)); //wichtig
+                    redos.pop().execute();
+                }
+                break;
+            default:
+                Command com = this.aktionen.get(eingabe);
+                if (com != null) {
+                    redos.clear();
+                    undos.add((Undo) com.execute());
+                }
         }
         System.out.println(this.rechner);
         return eingabe;

@@ -11,9 +11,11 @@ public class Rechnerzuruecksetzen implements Command {
     }
 
     @Override
-    public void execute() {
+    public Command execute() {
+        Undo undo = new Undo(this.rechner);
         rechner.setAnzeige(0);
         rechner.setSpeicher(0);
+        return undo;
     }
 
     @Override

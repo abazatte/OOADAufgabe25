@@ -4,8 +4,9 @@ import helper.language.Messages;
 
 public class ProgrammBeenden implements Command {
     @Override
-    public void execute() {
+    public Command execute() {
         System.exit(0);
+        return this;
     }
 
     @Override
